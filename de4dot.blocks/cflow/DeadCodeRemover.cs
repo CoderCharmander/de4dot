@@ -19,6 +19,7 @@
 
 using System.Collections.Generic;
 using dnlib.DotNet.Emit;
+using dnlib.DotNet;
 
 namespace de4dot.blocks.cflow {
 	// Removes dead code that is the result of one of our optimizations, or created by the
@@ -302,6 +303,15 @@ namespace de4dot.blocks.cflow {
 				case Code.Stobj:
 				case Code.Stsfld:
 				default:
+					if (instr.OpCode.Code == Code.Call) {
+						List<string> constFns = new() {
+							"System.Int32 System.Math::Abs(System.Int32)",
+							"System.Int32 System.Math::Min(System.Int32,System.Int32)",
+						};
+						if (constFns.Contains(((IMethod)instr.Operand).FullName)) {
+							break;
+						}
+					}
 					return false;
 				}
 			}

@@ -132,10 +132,15 @@ namespace de4dot.blocks.cflow {
 				case Code.Sub_Ovf:
 				case Code.Sub_Ovf_Un:
 				case Code.Xor:
+				case Code.Call:
 					if (DisableNewCode)
 						break;
-					if (i + 1 < instrs.Count && instrs[i + 1].OpCode.Code == Code.Pop)
+					if (i + 1 < instrs.Count && instrs[i + 1].OpCode.Code == Code.Pop) {
+						if (instr.OpCode.Code == Code.Call) {
+							Console.WriteLine($"Break call instrcount");
+						}
 						break;
+					}
 					if (!VerifyValidArgs(instr.Instruction))
 						break;
 					instructionEmulator.Emulate(instr.Instruction);
@@ -143,6 +148,9 @@ namespace de4dot.blocks.cflow {
 					Instruction newInstr = null;
 					if (tos.IsInt32()) {
 						var val = (Int32Value)tos;
+						if (instr.OpCode.Code == Code.Call) {
+							Console.WriteLine($"Done call value {val.Value}");
+						}
 						if (val.AllBitsValid())
 							newInstr = Instruction.CreateLdcI4(val.Value);
 					}

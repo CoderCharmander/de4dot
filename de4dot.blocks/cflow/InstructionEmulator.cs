@@ -1155,7 +1155,27 @@ namespace de4dot.blocks.cflow {
 
 		void Emulate_Call(Instruction instr, IMethod method) {
 			instr.CalculateStackUsage(out int pushes, out int pops);
-			valueStack.Pop(pops);
+			Value[] values = new Value[pops];
+			for (int i = 0; i < pops; ++i) {
+				values[i] = valueStack.Pop();
+			}
+			System.Console.WriteLine($"{method.FullName} - {pushes} - {pops}");
+			switch (method.FullName) {
+			case "System.Int32 System.Math::Abs(System.Int32)":
+				if (values[0].IsInt32() && ((Int32Value)values[0]).AllBitsValid()) {
+					valueStack.Push(new Int32Value(System.Math.Abs(((Int32Value)values[0]).Value)));
+					return;
+				}
+				break;
+			case "System.Int32 System.Math::Min(System.Int32,System.Int32)":
+				if (values[0].IsInt32() && ((Int32Value)values[0]).AllBitsValid() && values[1].IsInt32() && ((Int32Value)values[1]).AllBitsValid()) {
+					System.Console.WriteLine($"Math.Min {((Int32Value)values[0]).Value} {((Int32Value)values[1]).Value}");
+					valueStack.Push(new Int32Value(System.Math.Min(((Int32Value)values[0]).Value, ((Int32Value)values[1]).Value)));
+					return;
+				}
+				break;
+			}
+			System.Console.WriteLine("unknowning");
 			if (pushes == 1)
 				valueStack.Push(GetUnknownValue(method.MethodSig.GetRetType()));
 			else
